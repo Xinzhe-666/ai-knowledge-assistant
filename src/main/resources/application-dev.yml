@@ -1,0 +1,26 @@
+# 开发环境配置：本地开发用，所有本地的配置都写在这里
+spring:
+  jackson:
+    mapper:
+      # 按字段定义顺序序列化，而不是字母顺序
+      sort-properties-alphabetically: false
+  # 数据库配置（改成你自己的MySQL信息！）
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL8.0的驱动，固定写法
+    url: jdbc:mysql://localhost:3306/ai_knowledge_assistant?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root  # 你的MySQL用户名，一般是root
+    password: 123456  # 你的MySQL密码！改成你自己安装时设置的密码
+  # Redis配置（改成你自己的Redis信息！）
+  redis:
+    host: localhost  # Redis地址，本地就是localhost
+    port: 6379       # Redis端口，默认都是6379
+    password: ""      # 你的Redis密码，没有设置密码就空着，写两个引号
+    database: 0       # 使用的Redis库编号，0-15随便选一个
+    timeout: 10000    # 连接超时时间，10秒
+
+# 豆包API配置（后面会用到，先空着也没关系）
+doubao:
+  api:
+    key: 你的豆包API Key
+    model: doubao-pro-32k
+    endpoint: https://ark.cn-beijing.volces.com/api/v3/chat/completions
