@@ -1,0 +1,37 @@
+# 主配置文件：控制环境切换，通用配置放在这里
+spring:
+  application:
+    name: ai-knowledge-assistant  # 给项目起个名字，就像给人起名字一样
+  profiles:
+    active: dev  # 环境切换开关！写dev就是用开发环境配置，写prod就是用生产环境配置
+  # 文件上传大小限制（后面上传文档用）
+  servlet:
+    multipart:
+      max-file-size: 10MB  # 单个文件最大10MB
+      max-request-size: 10MB  # 单次请求最大10MB
+
+# 项目启动端口配置
+server:
+  port: 8080  # 项目启动在8080端口，就像门牌号一样，访问时要加这个端口
+  servlet:
+    context-path: /  # 项目的根路径，所有接口都在http://localhost:8080/ 下
+
+# MyBatis-Plus 核心配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml  # 告诉MyBatis-Plus复杂SQL的XML文件在哪里
+  type-aliases-package: com.xinzhe.aiassistant.entity  # 告诉MyBatis-Plus实体类在哪里
+  configuration:
+    map-underscore-to-camel-case: true  # 核心配置！自动把数据库的下划线（user_id）转成Java的小驼峰（userId）
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 控制台打印SQL，方便我们调试看SQL对不对
+  global-config:
+    db-config:
+      id-type: auto  # 主键自增，数据库里的id会自动1、2、3、4...增长
+      logic-delete-field: deleted  # 逻辑删除字段名
+      logic-delete-value: 1  # 逻辑删除值：1表示已删除
+      logic-not-delete-value: 0  # 未删除值：0表示正常
+
+# 日志级别配置
+logging:
+  level:
+    com.xinzhe.aiassistant: debug  # 我们自己写的代码，日志级别设为debug，能看到详细信息
+    org.springframework: info  # Spring框架的日志，级别设为info，不用看太详细的
