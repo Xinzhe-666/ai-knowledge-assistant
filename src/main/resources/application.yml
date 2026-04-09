@@ -35,3 +35,8 @@ logging:
   level:
     com.xinzhe.aiassistant: debug  # 我们自己写的代码，日志级别设为debug，能看到详细信息
     org.springframework: info  # Spring框架的日志，级别设为info，不用看太详细的
+
+# JWT配置
+jwt:
+  secret: xinzhe-ai-assistant-2026-abcdefghijklmnopqrstuvwxyz # 密钥，至少32位，随便写，不要泄露
+  expire-time: 7200000 # Token过期时间，2小时=7200000毫秒
