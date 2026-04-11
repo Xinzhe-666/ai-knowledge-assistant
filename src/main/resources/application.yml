@@ -7,8 +7,8 @@ spring:
   # 文件上传大小限制（后面上传文档用）
   servlet:
     multipart:
-      max-file-size: 10MB  # 单个文件最大10MB
-      max-request-size: 10MB  # 单次请求最大10MB
+      max-file-size: 50MB # 单个文件最大50MB
+      max-request-size: 100MB # 单次请求最大100MB
 
 # 项目启动端口配置
 server:
@@ -47,3 +47,9 @@ doubao:
   api-url: https://ark.cn-beijing.volces.com/api/v3/chat/completions # 豆包API官方地址
   model: doubao-seed-2-0-lite-260215  # 对应你开通的模型
   temperature: 0.7 # 模型温度：0=最严谨，1=最发散，0.7是通用对话的最佳值
+
+# 文件上传配置（关键修改）
+file:
+  # 改成你电脑上的绝对路径，比如D盘的uploads文件夹
+  # 注意：Windows路径要用双反斜杠 \\ 或者单斜杠 /
+  upload-path: C:/ai-assistant-uploads
