@@ -1,33 +1,57 @@
-HELP.md
+# ==================== Java 编译产物 ====================
+*.class
+*.jar
+*.war
+*.ear
+*.ctxt
+.mtj.tmp/
+hs_err_pid*
+replay_pid*
+
+# ==================== Maven 相关 ====================
 target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# ==================== IDE 配置文件 ====================
+.idea/
 *.iml
+*.iws
 *.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
 .vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ==================== 绝对不能提交的敏感信息 ====================
+# 包含API密钥、数据库密码的配置文件
+application-dev.yml
+application-prod.yml
+*.env
+*.properties
+# 密钥文件
+*.key
+*.pem
+
+# ==================== 日志文件 ====================
+logs/
+*.log
+*.log.*
+
+# ==================== 系统临时文件 ====================
+*.tmp
+*.temp
+*.swp
+.DS_Store
+Thumbs.db
+
+# ==================== 上传文件 ====================
+uploads/
