@@ -1,5 +1,7 @@
 package com.xinzhe.aiassistant.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xinzhe.aiassistant.common.result.Result;
 import com.xinzhe.aiassistant.common.util.DoubaoUtil;
@@ -119,6 +121,7 @@ public class ChatController {
      * 处理 /chat/rag POST 请求
      */
     @PostMapping("/rag")
+    @SentinelResource(value = "ragChat", blockHandler = "ragChatBlockHandler")
     public Result<String> ragChat(@RequestBody ChatRequestDTO request) {
         /**
          * RAG对话核心接口
@@ -175,12 +178,20 @@ public class ChatController {
                 similarityMap.put(chunk, similarity);
             }
 
-            // 按相似度降序排序，取Top5（可根据需求调整为Top3/Top10）
-            List<DocumentChunk> top5Chunks = similarityMap.entrySet().stream()
-                    .sorted(Map.Entry.<DocumentChunk, Double>comparingByValue(Comparator.reverseOrder()))
-                    .limit(5)
-                    .map(Map.Entry::getKey)
-                    .toList();
+
+        final int TOP_K = 5;
+        final double SIMILARITY_THRESHOLD = 0.75;
+
+        List<DocumentChunk> top5Chunks = similarityMap.entrySet().stream()
+                .filter(entry -> entry.getValue() >= SIMILARITY_THRESHOLD)
+                .sorted(Map.Entry.<DocumentChunk, Double>comparingByValue(Comparator.reverseOrder()))
+                .limit(TOP_K)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        if (top5Chunks.isEmpty()) {
+            return Result.success("抱歉，知识库中没有找到相关信息");
+        }
 
             // ====================== 6. 拼接RAG上下文（给大模型的参考内容） ======================
             StringBuilder context = new StringBuilder("### 参考知识库内容：\n");
@@ -237,4 +248,8 @@ public class ChatController {
             return Result.success(answer);
         }
         // 后续逻辑写在这里
+        // 限流降级方法
+        public Result<String> ragChatBlockHandler(ChatRequestDTO request, BlockException e) {
+            return Result.fail("请求过于频繁，请稍后再试");
+        }
 }
