@@ -70,12 +70,12 @@ logging:
 
 # JWT配置
 jwt:
-  secret: xinzhe-ai-assistant-2026-abcdefghijklmnopqrstuvwxyz # 密钥，至少32位，随便写，不要泄露
-  expire-time: 7200000 # Token过期时间，2小时=7200000毫秒
+  secret: ${JWT_SECRET:please-change-this-secret-locally} # 密钥，至少32位，随便写，不要泄露
+  expire-time: ${JWT_EXPIRE_TIME:7200000} # Token过期时间，2小时=7200000毫秒
 
 # 豆包大模型API配置（适配火山方舟Doubao-Seed-2.0-lite）
 doubao:
-  api-key: fdb3f2f4-b7e7-4e02-886f-328077cc90bc
+  api-key: ${DOUBAO_API_KEY:replace-me-locally}
   api-url: https://ark.cn-beijing.volces.com/api/v3/chat/completions # 豆包API官方地址
   model: doubao-seed-2-0-lite-260215  # 对应你开通的模型
   temperature: 0.7 # 模型温度：0=最严谨，1=最发散，0.7是通用对话的最佳值
@@ -84,4 +84,4 @@ doubao:
 file:
   # 改成你电脑上的绝对路径，比如D盘的uploads文件夹
   # 注意：Windows路径要用双反斜杠 \\ 或者单斜杠 /
-  upload-path: C:/ai-assistant-uploads
+  upload-path: ${FILE_UPLOAD_PATH:./uploads}
