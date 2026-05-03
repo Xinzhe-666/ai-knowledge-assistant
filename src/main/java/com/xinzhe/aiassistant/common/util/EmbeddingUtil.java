@@ -53,15 +53,33 @@ public class EmbeddingUtil {
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", embeddingModel);
+            requestBody.put("encoding_format", "float");
 
             /*
-             * 文本 Embedding 接口使用 input: ["文本内容"]
-             * 不再使用多模态格式：
-             * input: [{ "type": "text", "text": "..." }]
+             * 多模态 Embedding 接口格式：
+             * input: [
+             *   {
+             *     "type": "text",
+             *     "text": "文本内容"
+             *   }
+             * ]
              */
-            requestBody.put("input", List.of(cleanText));
+            List<Map<String, Object>> inputList = new ArrayList<>();
 
-            HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
+            Map<String, Object> textInput = new HashMap<>();
+            textInput.put("type", "text");
+            textInput.put("text", cleanText);
+
+            inputList.add(textInput);
+            requestBody.put("input", inputList);
+
+            /*
+             * 这里手动转 JSON 字符串，避免 RestTemplate 自动序列化导致请求体格式不清晰。
+             */
+            String requestJson = objectMapper.writeValueAsString(requestBody);
+            log.info("Embedding API 请求体：{}", requestJson);
+
+            HttpEntity<String> httpEntity = new HttpEntity<>(requestJson, headers);
 
             log.info("开始调用 Embedding API，url：{}，model：{}，文本长度：{}",
                     embeddingUrl, embeddingModel, cleanText.length());
@@ -79,11 +97,58 @@ public class EmbeddingUtil {
             }
 
             JsonNode dataNode = root.path("data");
-            if (!dataNode.isArray() || dataNode.isEmpty()) {
-                throw new RuntimeException("Embedding API 返回异常：data 不是数组或为空，response=" + response);
+            if (dataNode.isMissingNode() || dataNode.isNull()) {
+                throw new RuntimeException("Embedding API 返回异常：data 不存在，response=" + response);
             }
 
-            JsonNode embeddingNode = dataNode.get(0).path("embedding");
+            JsonNode embeddingNode;
+
+            /*
+             * 兼容两种返回格式：
+             *
+             * 1. 文本 Embedding 接口常见格式：
+             * data: [
+             *   {
+             *     "embedding": [...]
+             *   }
+             * ]
+             *
+             * 2. 多模态 Embedding 接口当前返回格式：
+             * data: {
+             *   "embedding": [...]
+             * }
+             */
+            if (dataNode.isArray()) {
+                if (dataNode.isEmpty()) {
+                    throw new RuntimeException("Embedding API 返回异常：data 数组为空，response=" + response);
+                }
+                embeddingNode = dataNode.get(0).path("embedding");
+            } else if (dataNode.isObject()) {
+                embeddingNode = dataNode.path("embedding");
+            } else {
+                throw new RuntimeException("Embedding API 返回异常：data 格式不支持，response=" + response);
+            }
+
+            /*
+             * 兼容二维数组：
+             * embedding: [[0.1, 0.2, ...]]
+             */
+            if (embeddingNode.isArray() && !embeddingNode.isEmpty() && embeddingNode.get(0).isArray()) {
+                embeddingNode = embeddingNode.get(0);
+            }
+
+            if (!embeddingNode.isArray() || embeddingNode.isEmpty()) {
+                throw new RuntimeException("Embedding API 返回异常：未获取到 embedding 数组，response=" + response);
+            }
+
+            /*
+             * 多模态 Embedding 可能返回二维数组：
+             * embedding: [[0.1, 0.2, ...]]
+             * 所以这里做一层兼容。
+             */
+            if (embeddingNode.isArray() && !embeddingNode.isEmpty() && embeddingNode.get(0).isArray()) {
+                embeddingNode = embeddingNode.get(0);
+            }
 
             if (!embeddingNode.isArray() || embeddingNode.isEmpty()) {
                 throw new RuntimeException("Embedding API 返回异常：未获取到 embedding 数组，response=" + response);
