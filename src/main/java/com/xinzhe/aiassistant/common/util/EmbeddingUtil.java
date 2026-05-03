@@ -81,8 +81,7 @@ public class EmbeddingUtil {
 
             HttpEntity<String> httpEntity = new HttpEntity<>(requestJson, headers);
 
-            log.info("开始调用 Embedding API，url：{}，model：{}，文本长度：{}",
-                    embeddingUrl, embeddingModel, cleanText.length());
+            log.info("开始调用 Embedding API，url：{}，model：{}，文本长度：{}", embeddingUrl, embeddingModel, cleanText.length());
 
             String response = restTemplate.postForObject(embeddingUrl, httpEntity, String.class);
 
@@ -161,9 +160,7 @@ public class EmbeddingUtil {
 
             log.info("文本向量化成功，向量维度：{}", embeddingList.size());
 
-            return embeddingList.stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(","));
+            return embeddingList.stream().map(String::valueOf).collect(Collectors.joining(","));
 
         } catch (Exception e) {
             log.error("文本向量化失败", e);

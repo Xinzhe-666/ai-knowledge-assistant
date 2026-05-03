@@ -144,9 +144,7 @@ public class DocumentController {
         Long userId = UserContext.getCurrentUserId();
 
         LambdaQueryWrapper<KnowledgeDocument> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(KnowledgeDocument::getUserId, userId)
-                .eq(KnowledgeDocument::getDeleted, 0)
-                .orderByDesc(KnowledgeDocument::getCreatedAt);
+        wrapper.eq(KnowledgeDocument::getUserId, userId).eq(KnowledgeDocument::getDeleted, 0).orderByDesc(KnowledgeDocument::getCreatedAt);
 
         return Result.success(documentService.list(wrapper));
     }
@@ -166,8 +164,7 @@ public class DocumentController {
         documentService.removeById(documentId);
 
         LambdaQueryWrapper<DocumentChunk> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DocumentChunk::getDocumentId, documentId)
-                .eq(DocumentChunk::getUserId, userId);
+        wrapper.eq(DocumentChunk::getDocumentId, documentId).eq(DocumentChunk::getUserId, userId);
 
         documentChunkService.remove(wrapper);
 

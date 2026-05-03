@@ -12,6 +12,8 @@ services:
       REDIS_PORT: 6379
       DOUBAO_API_KEY: ${DOUBAO_API_KEY}
       JWT_SECRET: ${JWT_SECRET}
+      DOUBAO_EMBEDDING_URL: ${DOUBAO_EMBEDDING_URL}
+      DOUBAO_EMBEDDING_MODEL: ${DOUBAO_EMBEDDING_MODEL}
       FILE_UPLOAD_PATH: /app/uploads
     depends_on:
       - mysql

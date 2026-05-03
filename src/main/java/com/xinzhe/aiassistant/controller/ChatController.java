@@ -16,12 +16,14 @@ import com.xinzhe.aiassistant.service.DocumentChunkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.xinzhe.aiassistant.common.util.EmbeddingUtil;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Comparator;
+
 import com.xinzhe.aiassistant.entity.DocumentChunk;
 
 /**
@@ -117,6 +119,7 @@ public class ChatController {
         // 10. 返回AI回答给前端
         return Result.success(answer);
     }
+
     /**
      * 处理 /chat/rag POST 请求
      */
@@ -128,56 +131,56 @@ public class ChatController {
          * 接口地址：POST /chat/rag
          * 完整流程：用户提问 → 向量化 → 检索相似文档 → 拼上下文 → 大模型回答 → 存对话 → 返回结果
          */
-            // ====================== 1. 基础参数校验 ======================
-            Long userId = UserContext.getCurrentUserId(); // 从上下文拿当前登录用户ID（你已有的工具类）
-            Long sessionId = request.getSessionId();
-            String question = request.getQuestion();
+        // ====================== 1. 基础参数校验 ======================
+        Long userId = UserContext.getCurrentUserId(); // 从上下文拿当前登录用户ID（你已有的工具类）
+        Long sessionId = request.getSessionId();
+        String question = request.getQuestion();
 
-            // 非空校验
-            if (sessionId == null) {
-                return Result.fail("会话ID不能为空");
-            }
-            if (question == null || question.trim().isEmpty()) {
-                return Result.fail("提问内容不能为空");
-            }
+        // 非空校验
+        if (sessionId == null) {
+            return Result.fail("会话ID不能为空");
+        }
+        if (question == null || question.trim().isEmpty()) {
+            return Result.fail("提问内容不能为空");
+        }
 
-            // ====================== 2. 校验会话权限（复用你sendMessage的逻辑） ======================
-            ChatSession session = chatSessionService.getById(sessionId);
-            if (session == null || !session.getUserId().equals(userId)) {
-                return Result.fail("会话不存在或无权限访问");
-            }
+        // ====================== 2. 校验会话权限（复用你sendMessage的逻辑） ======================
+        ChatSession session = chatSessionService.getById(sessionId);
+        if (session == null || !session.getUserId().equals(userId)) {
+            return Result.fail("会话不存在或无权限访问");
+        }
 
-            // ====================== 3. 用户问题向量化（复用你已有的EmbeddingUtil） ======================
-            // 把用户问题转换成向量，用于后续相似度计算
-            // 🔴 注意：根据你的EmbeddingUtil方法签名二选一：
-            // 情况1：textToEmbedding返回double[]（推荐）
-            String questionEmbedding = embeddingUtil.textToEmbedding(question);
-            double[] questionVector = embeddingUtil.embeddingToDoubleArray(questionEmbedding);
-            // 情况2：textToEmbedding返回String（数据库存字符串向量），用下面两行替换上面一行
-            // String questionEmbeddingStr = embeddingUtil.textToEmbedding(question);
-            // double[] questionVector = embeddingUtil.embeddingToDoubleArray(questionEmbeddingStr);
+        // ====================== 3. 用户问题向量化（复用你已有的EmbeddingUtil） ======================
+        // 把用户问题转换成向量，用于后续相似度计算
+        // 🔴 注意：根据你的EmbeddingUtil方法签名二选一：
+        // 情况1：textToEmbedding返回double[]（推荐）
+        String questionEmbedding = embeddingUtil.textToEmbedding(question);
+        double[] questionVector = embeddingUtil.embeddingToDoubleArray(questionEmbedding);
+        // 情况2：textToEmbedding返回String（数据库存字符串向量），用下面两行替换上面一行
+        // String questionEmbeddingStr = embeddingUtil.textToEmbedding(question);
+        // double[] questionVector = embeddingUtil.embeddingToDoubleArray(questionEmbeddingStr);
 
-            // ====================== 4. 检索当前用户的文档切片（核心：用户隔离！） ======================
-            // 用MyBatis-Plus lambda查询，只查当前用户的切片，绝对不能查全量！
-            List<DocumentChunk> userChunks = documentChunkService.lambdaQuery()
-                    .eq(DocumentChunk::getUserId, userId) // 按用户ID过滤，实现数据隔离
-                    .eq(DocumentChunk::getDeleted, 0) // 过滤未删除的切片
-                    .list();
+        // ====================== 4. 检索当前用户的文档切片（核心：用户隔离！） ======================
+        // 用MyBatis-Plus lambda查询，只查当前用户的切片，绝对不能查全量！
+        List<DocumentChunk> userChunks = documentChunkService.lambdaQuery()
+                .eq(DocumentChunk::getUserId, userId) // 按用户ID过滤，实现数据隔离
+                .eq(DocumentChunk::getDeleted, 0) // 过滤未删除的切片
+                .list();
 
-            // 知识库为空直接返回
-            if (userChunks.isEmpty()) {
-                return Result.fail("您的知识库为空，请先上传文档后再提问");
-            }
+        // 知识库为空直接返回
+        if (userChunks.isEmpty()) {
+            return Result.fail("您的知识库为空，请先上传文档后再提问");
+        }
 
-            // ====================== 5. 计算余弦相似度，取Top5最相关切片 ======================
-            Map<DocumentChunk, Double> similarityMap = new HashMap<>();
-            for (DocumentChunk chunk : userChunks) {
-                // 把数据库里的String向量转成double数组
-                double[] chunkVector = embeddingUtil.embeddingToDoubleArray(chunk.getEmbedding());
-                // 计算相似度（你已有的工具类方法）
-                double similarity = embeddingUtil.cosineSimilarity(chunk.getEmbedding(), questionVector);
-                similarityMap.put(chunk, similarity);
-            }
+        // ====================== 5. 计算余弦相似度，取Top5最相关切片 ======================
+        Map<DocumentChunk, Double> similarityMap = new HashMap<>();
+        for (DocumentChunk chunk : userChunks) {
+            // 把数据库里的String向量转成double数组
+            double[] chunkVector = embeddingUtil.embeddingToDoubleArray(chunk.getEmbedding());
+            // 计算相似度（你已有的工具类方法）
+            double similarity = embeddingUtil.cosineSimilarity(chunk.getEmbedding(), questionVector);
+            similarityMap.put(chunk, similarity);
+        }
 
 
         final int TOP_K = 5;
@@ -194,63 +197,64 @@ public class ChatController {
             return Result.success("抱歉，知识库中没有找到相关信息");
         }
 
-            // ====================== 6. 拼接RAG上下文（给大模型的参考内容） ======================
-            StringBuilder context = new StringBuilder("### 参考知识库内容：\n");
-            for (int i = 0; i < top5Chunks.size(); i++) {
-                context.append(i + 1).append(". ").append(top5Chunks.get(i).getChunkText()).append("\n\n");
-            }
-
-            // ====================== 7. 构建大模型消息列表（复用你现有的ChatMessageDTO） ======================
-            List<ChatMessageDTO> messageList = new ArrayList<>();
-
-            // 🔴 系统提示词（核心！严格约束大模型，禁止瞎编）
-            messageList.add(new ChatMessageDTO("system",
-                    "你是豆包AI知识助手，严格基于用户提供的【参考知识库内容】回答问题。\n" +
-                            "规则：\n" +
-                            "1. 只能使用参考内容中的信息，绝对不能编造、脑补任何内容\n" +
-                            "2. 如果参考内容中没有相关信息，直接回答「抱歉，知识库中没有相关内容，无法回答您的问题」\n" +
-                            "3. 回答要简洁、准确，符合用户问题的需求\n" +
-                            "4. 不要提及「参考内容」「知识库」等字样，直接给出答案\n"
-            ));
-
-            // 拼接上下文+用户问题，发给大模型
-            String userPrompt = context + "\n### 用户问题：\n" + question;
-            messageList.add(new ChatMessageDTO("user", userPrompt));
-
-            // ====================== 8. 调用大模型API（复用你现有的DoubaoUtil） ======================
-            String answer = doubaoUtil.chat(messageList);
-
-            // ====================== 9. 保存对话历史（复用你sendMessage的逻辑，统一会话） ======================
-            // 保存用户提问
-            ChatMessage userMsg = new ChatMessage();
-            userMsg.setSessionId(sessionId);
-            userMsg.setUserId(userId);
-            userMsg.setRole("user");
-            userMsg.setContent(question);
-            userMsg.setCreatedAt(LocalDateTime.now());
-            userMsg.setDeleted(0);
-            chatMessageService.save(userMsg);
-
-            // 保存AI回答
-            ChatMessage assistantMsg = new ChatMessage();
-            assistantMsg.setSessionId(sessionId);
-            assistantMsg.setUserId(userId);
-            assistantMsg.setRole("assistant");
-            assistantMsg.setContent(answer);
-            assistantMsg.setCreatedAt(LocalDateTime.now());
-            assistantMsg.setDeleted(0);
-            chatMessageService.save(assistantMsg);
-
-            // ====================== 10. 更新会话最后更新时间（复用你sendMessage的逻辑） ======================
-            session.setUpdatedAt(LocalDateTime.now());
-            chatSessionService.updateById(session);
-
-            // ====================== 11. 统一返回结果 ======================
-            return Result.success(answer);
+        // ====================== 6. 拼接RAG上下文（给大模型的参考内容） ======================
+        StringBuilder context = new StringBuilder("### 参考知识库内容：\n");
+        for (int i = 0; i < top5Chunks.size(); i++) {
+            context.append(i + 1).append(". ").append(top5Chunks.get(i).getChunkText()).append("\n\n");
         }
-        // 后续逻辑写在这里
-        // 限流降级方法
-        public Result<String> ragChatBlockHandler(ChatRequestDTO request, BlockException e) {
-            return Result.fail("请求过于频繁，请稍后再试");
-        }
+
+        // ====================== 7. 构建大模型消息列表（复用你现有的ChatMessageDTO） ======================
+        List<ChatMessageDTO> messageList = new ArrayList<>();
+
+        // 🔴 系统提示词（核心！严格约束大模型，禁止瞎编）
+        messageList.add(new ChatMessageDTO("system",
+                "你是豆包AI知识助手，严格基于用户提供的【参考知识库内容】回答问题。\n" +
+                        "规则：\n" +
+                        "1. 只能使用参考内容中的信息，绝对不能编造、脑补任何内容\n" +
+                        "2. 如果参考内容中没有相关信息，直接回答「抱歉，知识库中没有相关内容，无法回答您的问题」\n" +
+                        "3. 回答要简洁、准确，符合用户问题的需求\n" +
+                        "4. 不要提及「参考内容」「知识库」等字样，直接给出答案\n"
+        ));
+
+        // 拼接上下文+用户问题，发给大模型
+        String userPrompt = context + "\n### 用户问题：\n" + question;
+        messageList.add(new ChatMessageDTO("user", userPrompt));
+
+        // ====================== 8. 调用大模型API（复用你现有的DoubaoUtil） ======================
+        String answer = doubaoUtil.chat(messageList);
+
+        // ====================== 9. 保存对话历史（复用你sendMessage的逻辑，统一会话） ======================
+        // 保存用户提问
+        ChatMessage userMsg = new ChatMessage();
+        userMsg.setSessionId(sessionId);
+        userMsg.setUserId(userId);
+        userMsg.setRole("user");
+        userMsg.setContent(question);
+        userMsg.setCreatedAt(LocalDateTime.now());
+        userMsg.setDeleted(0);
+        chatMessageService.save(userMsg);
+
+        // 保存AI回答
+        ChatMessage assistantMsg = new ChatMessage();
+        assistantMsg.setSessionId(sessionId);
+        assistantMsg.setUserId(userId);
+        assistantMsg.setRole("assistant");
+        assistantMsg.setContent(answer);
+        assistantMsg.setCreatedAt(LocalDateTime.now());
+        assistantMsg.setDeleted(0);
+        chatMessageService.save(assistantMsg);
+
+        // ====================== 10. 更新会话最后更新时间（复用你sendMessage的逻辑） ======================
+        session.setUpdatedAt(LocalDateTime.now());
+        chatSessionService.updateById(session);
+
+        // ====================== 11. 统一返回结果 ======================
+        return Result.success(answer);
+    }
+
+    // 后续逻辑写在这里
+    // 限流降级方法
+    public Result<String> ragChatBlockHandler(ChatRequestDTO request, BlockException e) {
+        return Result.fail("请求过于频繁，请稍后再试");
+    }
 }
