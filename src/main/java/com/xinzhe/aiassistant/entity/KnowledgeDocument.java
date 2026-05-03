@@ -18,6 +18,18 @@ public class KnowledgeDocument {
     private String fileUrl;
     private Long fileSize;
     private String content;
+    /**
+     * 文档处理状态：
+     * PROCESSING：处理中
+     * SUCCESS：处理成功
+     * FAILED：处理失败
+     */
+    private String status;
+
+    /**
+     * 处理失败时记录错误信息，方便排查问题
+     */
+    private String errorMessage;
     @TableLogic
     private Integer deleted;
     private LocalDateTime createdAt;

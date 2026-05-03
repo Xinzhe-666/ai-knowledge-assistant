@@ -3,13 +3,9 @@
 *.jar
 *.war
 *.ear
-*.ctxt
-.mtj.tmp/
-hs_err_pid*
-replay_pid*
+target/
 
 # ==================== Maven 相关 ====================
-target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -20,7 +16,7 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 
-# ==================== IDE 配置文件 ====================
+# ==================== IDE 配置 ====================
 .idea/
 *.iml
 *.iws
@@ -31,20 +27,27 @@ buildNumber.properties
 *.userosscache
 *.sln.docstates
 
-# ==================== 绝对不能提交的敏感信息 ====================
-# 包含API密钥、数据库密码的配置文件
+# ==================== 敏感配置：绝对不要提交 ====================
+.env
+*.env
 application-dev.yml
 application-prod.yml
-*.env
-*.properties
-# 密钥文件
+application-local.yml
+
+# ==================== 密钥文件 ====================
 *.key
 *.pem
+*.p12
+*.jks
 
 # ==================== 日志文件 ====================
 logs/
 *.log
 *.log.*
+
+# ==================== 上传文件 ====================
+uploads/
+ai-assistant-uploads/
 
 # ==================== 系统临时文件 ====================
 *.tmp
@@ -52,6 +55,3 @@ logs/
 *.swp
 .DS_Store
 Thumbs.db
-
-# ==================== 上传文件 ====================
-uploads/

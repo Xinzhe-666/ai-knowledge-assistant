@@ -151,7 +151,8 @@ public class ChatController {
             // 把用户问题转换成向量，用于后续相似度计算
             // 🔴 注意：根据你的EmbeddingUtil方法签名二选一：
             // 情况1：textToEmbedding返回double[]（推荐）
-            String questionVector = embeddingUtil.textToEmbedding(question);
+            String questionEmbedding = embeddingUtil.textToEmbedding(question);
+            double[] questionVector = embeddingUtil.embeddingToDoubleArray(questionEmbedding);
             // 情况2：textToEmbedding返回String（数据库存字符串向量），用下面两行替换上面一行
             // String questionEmbeddingStr = embeddingUtil.textToEmbedding(question);
             // double[] questionVector = embeddingUtil.embeddingToDoubleArray(questionEmbeddingStr);
@@ -174,13 +175,13 @@ public class ChatController {
                 // 把数据库里的String向量转成double数组
                 double[] chunkVector = embeddingUtil.embeddingToDoubleArray(chunk.getEmbedding());
                 // 计算相似度（你已有的工具类方法）
-                double similarity = embeddingUtil.cosineSimilarity(questionVector, chunkVector);
+                double similarity = embeddingUtil.cosineSimilarity(chunk.getEmbedding(), questionVector);
                 similarityMap.put(chunk, similarity);
             }
 
 
         final int TOP_K = 5;
-        final double SIMILARITY_THRESHOLD = 0.75;
+        final double SIMILARITY_THRESHOLD = 0.30;
 
         List<DocumentChunk> top5Chunks = similarityMap.entrySet().stream()
                 .filter(entry -> entry.getValue() >= SIMILARITY_THRESHOLD)
