@@ -26,6 +26,9 @@ spring:
 # 豆包API配置
 doubao:
   api-key: 你的豆包API密钥
+# JWT
+jwt:
+  secret: your_jwt_secret_at_least_32_chars
 
 # 服务器配置
 server:

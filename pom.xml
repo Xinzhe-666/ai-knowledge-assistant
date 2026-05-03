@@ -92,11 +92,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- 1. 文件上传依赖，Spring Boot自带，用于处理multipart/form-data文件上传 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
 
         <!-- 2. PDF文档解析依赖，用于解析PDF文件 -->
         <dependency>
@@ -125,11 +120,7 @@
             <version>2.5.0</version>
         </dependency>
 
-        <!-- Spring Cache + Redis -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
+        <!-- Spring Cache -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>

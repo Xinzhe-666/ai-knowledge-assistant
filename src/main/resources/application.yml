@@ -1,87 +1,75 @@
-# 主配置文件：控制环境切换，通用配置放在这里
 spring:
   application:
-    name: ai-knowledge-assistant  # 给项目起个名字，就像给人起名字一样
+    name: ai-knowledge-assistant
+
   profiles:
-    active: dev  # 环境切换开关！写dev就是用开发环境配置，写prod就是用生产环境配置
-  # 文件上传大小限制（后面上传文档用）
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
   servlet:
     multipart:
-      max-file-size: 50MB # 单个文件最大50MB
-      max-request-size: 100MB # 单次请求最大100MB
-    # Redis配置
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ai_knowledge_assistant?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
   data:
     redis:
-      host: localhost
-      port: 6379
-      password: "" # 没有密码就留空
-      database: 0
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
       timeout: 3000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-wait: -1ms
-          max-idle: 8
-          min-idle: 0
 
-    # 缓存配置
-    cache:
-      type: redis
-      redis:
-        time-to-live: 3600000 # 缓存过期时间：1小时（毫秒）
-        cache-null-values: false # 不缓存null值
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+      cache-null-values: false
 
   cloud:
     sentinel:
       transport:
-        dashboard: localhost:8080 # Sentinel控制台地址
+        dashboard: ${SENTINEL_DASHBOARD:localhost:8080}
         port: 8719
-      datasource:
-        ds1:
-          file:
-            file: classpath:sentinel/rules.json
-            rule-type: flow
 
-# 项目启动端口配置
 server:
-  port: 8080  # 项目启动在8080端口，就像门牌号一样，访问时要加这个端口
+  port: ${SERVER_PORT:8080}
   servlet:
-    context-path: /  # 项目的根路径，所有接口都在http://localhost:8080/ 下
+    context-path: /
 
-# MyBatis-Plus 核心配置
 mybatis-plus:
-  mapper-locations: classpath:mapper/*.xml  # 告诉MyBatis-Plus复杂SQL的XML文件在哪里
-  type-aliases-package: com.xinzhe.aiassistant.entity  # 告诉MyBatis-Plus实体类在哪里
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.xinzhe.aiassistant.entity
   configuration:
-    map-underscore-to-camel-case: true  # 核心配置！自动把数据库的下划线（user_id）转成Java的小驼峰（userId）
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 控制台打印SQL，方便我们调试看SQL对不对
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      id-type: auto  # 主键自增，数据库里的id会自动1、2、3、4...增长
-      logic-delete-field: deleted  # 逻辑删除字段名
-      logic-delete-value: 1  # 逻辑删除值：1表示已删除
-      logic-not-delete-value: 0  # 未删除值：0表示正常
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
 
-# 日志级别配置
 logging:
   level:
-    com.xinzhe.aiassistant: debug  # 我们自己写的代码，日志级别设为debug，能看到详细信息
-    org.springframework: info  # Spring框架的日志，级别设为info，不用看太详细的
+    com.xinzhe.aiassistant: debug
+    org.springframework: info
 
-# JWT配置
 jwt:
-  secret: xinzhe-ai-assistant-2026-abcdefghijklmnopqrstuvwxyz # 密钥，至少32位，随便写，不要泄露
-  expire-time: 7200000 # Token过期时间，2小时=7200000毫秒
+  secret: ${JWT_SECRET}
+  expire-time: ${JWT_EXPIRE_TIME:7200000}
 
-# 豆包大模型API配置（适配火山方舟Doubao-Seed-2.0-lite）
 doubao:
-  api-key: fdb3f2f4-b7e7-4e02-886f-328077cc90bc
-  api-url: https://ark.cn-beijing.volces.com/api/v3/chat/completions # 豆包API官方地址
-  model: doubao-seed-2-0-lite-260215  # 对应你开通的模型
-  temperature: 0.7 # 模型温度：0=最严谨，1=最发散，0.7是通用对话的最佳值
+  api-key: ${DOUBAO_API_KEY}
+  api-url: ${DOUBAO_API_URL:https://ark.cn-beijing.volces.com/api/v3/chat/completions}
+  model: ${DOUBAO_CHAT_MODEL:doubao-seed-2-0-lite-260215}
+  temperature: ${DOUBAO_TEMPERATURE:0.7}
+  embedding-url: ${DOUBAO_EMBEDDING_URL:https://ark.cn-beijing.volces.com/api/v3/embeddings}
+  embedding-model: ${DOUBAO_EMBEDDING_MODEL:doubao-embedding-text-240715}
 
-# 文件上传配置（关键修改）
 file:
-  # 改成你电脑上的绝对路径，比如D盘的uploads文件夹
-  # 注意：Windows路径要用双反斜杠 \\ 或者单斜杠 /
-  upload-path: C:/ai-assistant-uploads
+  upload-path: ${FILE_UPLOAD_PATH:./uploads}

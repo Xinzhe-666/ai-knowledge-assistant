@@ -1,6 +1,6 @@
 package com.xinzhe.aiassistant.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -12,23 +12,39 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Autowired
+    @Resource
     private JwtInterceptor jwtInterceptor;
 
-    /**
-     * 配置拦截器规则
-     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
                 // 拦截所有请求
                 .addPathPatterns("/**")
-                // 放行以下公开接口，不需要登录就能访问
+                // 放行无需登录的接口
                 .excludePathPatterns(
-                        "/auth/register", // 用户注册
-                        "/auth/login",    // 用户登录
-                        "/test/**",       // 我们之前写的测试接口，全部放行
-                        "/error"          // Spring Boot默认错误页面，必须放行
+                        // 登录/注册接口
+                        "/auth/login",
+                        "/auth/register",
+
+                        // 兼容如果以后加了 /api 前缀
+                        "/api/auth/login",
+                        "/api/auth/register",
+
+                        // Sentinel / Actuator
+                        "/registry/**",
+                        "/actuator/**",
+
+                        // Swagger / OpenAPI
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/v2/api-docs/**",
+                        "/webjars/**",
+
+                        // 其他
+                        "/error",
+                        "/favicon.ico",
+                        "/"
                 );
     }
 }
