@@ -1,46 +1,25 @@
 # 开发环境配置模板
-# 复制此文件为 application-dev.yml，填写你的真实配置
-spring:
-  # 数据库配置
-  datasource:
-    url: jdbc:mysql://localhost:3306/ai_knowledge?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: 你的MySQL密码
-    driver-class-name: com.mysql.cj.jdbc.Driver
+# 注意：这是 example 文件，可以提交 GitHub
+# 真实密码、真实 API Key 不要写进仓库
 
-  # Redis配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai_knowledge_assistant?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: your_mysql_password
+
   data:
     redis:
       host: localhost
       port: 6379
+      password: ""
       database: 0
-      password: "" # 没有密码留空
 
-  # 缓存配置
-  cache:
-    type: redis
-    redis:
-      time-to-live: 3600000 # 缓存过期时间：1小时
-      cache-null-values: false
-
-# 豆包API配置
-doubao:
-  api-key: 你的豆包API密钥
-# JWT
 jwt:
   secret: your_jwt_secret_at_least_32_chars
 
-# 服务器配置
-server:
-  port: 8080
-
-# MyBatis-Plus配置
-mybatis-plus:
-  configuration:
-    map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  global-config:
-    db-config:
-      logic-delete-field: deleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
+doubao:
+  api-key: your_doubao_api_key
+  embedding-url: https://ark.cn-beijing.volces.com/api/v3/embeddings/multimodal
+  embedding-model: doubao-embedding-vision-251215

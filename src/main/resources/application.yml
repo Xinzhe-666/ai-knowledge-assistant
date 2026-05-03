@@ -24,16 +24,10 @@ spring:
       database: ${REDIS_DATABASE:0}
       timeout: 3000ms
 
-  cache:
-    type: redis
-    redis:
-      time-to-live: 3600000
-      cache-null-values: false
-
   cloud:
     sentinel:
       transport:
-        dashboard: ${SENTINEL_DASHBOARD:localhost:8080}
+        dashboard: ${SENTINEL_DASHBOARD:localhost:8858}
         port: 8719
 
 server:
