@@ -1,11 +1,11 @@
-# ==================== Java 编译产物 ====================
+# Java 编译产物
 *.class
 *.jar
 *.war
 *.ear
 target/
 
-# ==================== Maven 相关 ====================
+# Maven
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -16,40 +16,36 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 
-# ==================== IDE 配置 ====================
+# IDE
 .idea/
 *.iml
 *.iws
 *.ipr
 .vscode/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
 
-# ==================== 敏感配置：绝对不要提交 ====================
+# 敏感配置
 .env
 *.env
 application-dev.yml
 application-prod.yml
 application-local.yml
 
-# ==================== 密钥文件 ====================
+# 密钥文件
 *.key
 *.pem
 *.p12
 *.jks
 
-# ==================== 日志文件 ====================
+# 日志
 logs/
 *.log
 *.log.*
 
-# ==================== 上传文件 ====================
+# 上传文件
 uploads/
 ai-assistant-uploads/
 
-# ==================== 系统临时文件 ====================
+# 系统文件
 *.tmp
 *.temp
 *.swp
